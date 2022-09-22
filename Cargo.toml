@@ -1,0 +1,20 @@
+[package]
+name = "bandwagon-exporter"
+version = "0.1.0"
+authors = ["icyleaf <icyleaf.cn@gmail.com>"]
+description = "A Prometheus Exporter for BandwagonHost KiwiVM."
+edition = "2021"
+
+keywords = ["prometheus", "exporter", "bandwagon"]
+categories = ["database"]
+
+[dependencies]
+log = "0.4"
+clap = { version = "3.2.22", features = ["derive", "env"] }
+config = "0.13.1"
+serde = "1.0.144"
+serde_json = "1.0.85"
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+prometheus = "0.13.2"
+lazy_static = "1.4.0"

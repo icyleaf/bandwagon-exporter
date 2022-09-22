@@ -1,0 +1,13 @@
+{
+  "endpoint": "https://api.64clouds.com/v1",
+  "servers": [
+    {
+      "veid": "12345678",
+      "api_key": "private_111111111111111111111111"
+    },
+    {
+      "veid": "12345678",
+      "api_key": "private_111111111111111111111111"
+    }
+  ]
+}
