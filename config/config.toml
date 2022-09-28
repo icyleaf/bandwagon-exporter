@@ -1,9 +1,9 @@
 endpoint = "https://api.64clouds.com/v1"
 
-[[servers]]
+[[nodes]]
 veid = "12345678"
 api_key = "private_111111111111111111111111"
 
-[[servers]]
+[[nodes]]
 veid = "12345678"
 api_key = "private_111111111111111111111111"

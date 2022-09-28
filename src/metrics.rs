@@ -1,9 +1,10 @@
-use prometheus::{self, IntGaugeVec, TextEncoder, Encoder, register_int_counter_vec, IntCounterVec};
+
+use prometheus::{self, IntGaugeVec, TextEncoder, Encoder};
 use prometheus::{register_int_gauge_vec, opts};
 use lazy_static::lazy_static;
 
-use crate::client::{ServiceInfo, RateLimitStatus};
-use crate::configuration::Server;
+use crate::bandwagon::{ServiceInfo, RateLimitStatus};
+use crate::configuration::Node;
 
 lazy_static! {
   pub static ref DATA_COUNTER: IntGaugeVec = register_int_gauge_vec!(
@@ -35,16 +36,6 @@ lazy_static! {
     opts!("bandwagon_api_rate_limit_remaining_points_24h", "API rate limit number of 'points' available to use in the current 24-hour interval"),
     &["veid", "api_key"]
   ).expect("Can't create a metric");
-
-  // register_int_counter_vec!(
-  //   opts!("http_requests_total", "HTTP requests total"),
-  //   &["method", "path"]
-  // )
-  // .expect("Can't create a metric");
-
-  // pub static ref HTTP_CONNECTED_SSE_CLIENTS: IntGauge =
-  //   register_int_gauge!(opts!("bandwagon_data_counterhttp_connected_sse_clients", "Connected SSE clients"))
-  //     .expect("Can't create a metric");
 }
 
 #[allow(dead_code)]
@@ -75,7 +66,7 @@ pub fn set_data_next_reset(server_info: &ServiceInfo) {
 }
 
 #[allow(dead_code)]
-pub fn set_api_rate_limit_status(server: &Server, rate_limit_status: &RateLimitStatus) {
+pub fn set_api_rate_limit_status(server: &Node, rate_limit_status: &RateLimitStatus) {
   RATE_LIMIT_REMAINING_15MIN
     .with_label_values(&[
       &server.veid, &server.api_key
@@ -130,18 +121,3 @@ pub fn render_prometheus_text_data() -> String {
 
   response
 }
-
-// pub async fn metrics() -> Result<HttpResponse, CustomError> {
-//   let encoder = TextEncoder::new();
-//   let mut buffer = vec![];
-//   encoder
-//       .encode(&prometheus::gather(), &mut buffer)
-//       .expect("Failed to encode metrics");
-
-//   let response = String::from_utf8(buffer.clone()).expect("Failed to convert bytes to string");
-//   buffer.clear();
-
-//   Ok(HttpResponse::Ok()
-//       .insert_header(header::ContentType(mime::TEXT_PLAIN))
-//       .body(response))
-// }
