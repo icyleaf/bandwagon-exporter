@@ -2,7 +2,7 @@ use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 use crate::Command;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Node {
   pub veid: String,
   pub api_key: String,

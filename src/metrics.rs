@@ -1,5 +1,5 @@
 
-use prometheus::{self, IntGaugeVec, TextEncoder, Encoder};
+use prometheus::{self, IntGaugeVec, TextEncoder, Encoder, IntCounterVec, register_int_counter_vec};
 use prometheus::{register_int_gauge_vec, opts};
 use lazy_static::lazy_static;
 
@@ -27,14 +27,19 @@ lazy_static! {
     &["hostname", "ip_address", "os", "suspended", "location", "vm_type", "plan", "disk", "ram", "swap"]
   ).expect("Can't create a metric");
 
-  pub static ref RATE_LIMIT_REMAINING_15MIN: IntGaugeVec = register_int_gauge_vec!(
-    opts!("bandwagon_api_rate_limit_remaining_points_15min", "API rate limit number of 'points' available to use in the current 15-minutes interval"),
-    &["veid", "api_key"]
+  pub static ref API_REQUEST_TOTAL: IntCounterVec = register_int_counter_vec!(
+    opts!("bandwagon_api_request_total", "The total of request bandwagon API since run this CLI"),
+    &["veid"]
   ).expect("Can't create a metric");
 
-  pub static ref RATE_LIMIT_REMAINING_24H: IntGaugeVec = register_int_gauge_vec!(
+  pub static ref API_RATE_LIMIT_REMAINING_15MIN: IntGaugeVec = register_int_gauge_vec!(
+    opts!("bandwagon_api_rate_limit_remaining_points_15min", "API rate limit number of 'points' available to use in the current 15-minutes interval"),
+    &["veid"]
+  ).expect("Can't create a metric");
+
+  pub static ref API_RATE_LIMIT_REMAINING_24H: IntGaugeVec = register_int_gauge_vec!(
     opts!("bandwagon_api_rate_limit_remaining_points_24h", "API rate limit number of 'points' available to use in the current 24-hour interval"),
-    &["veid", "api_key"]
+    &["veid"]
   ).expect("Can't create a metric");
 }
 
@@ -66,18 +71,21 @@ pub fn set_data_next_reset(server_info: &ServiceInfo) {
 }
 
 #[allow(dead_code)]
-pub fn set_api_rate_limit_status(server: &Node, rate_limit_status: &RateLimitStatus) {
-  RATE_LIMIT_REMAINING_15MIN
-    .with_label_values(&[
-      &server.veid, &server.api_key
-    ])
+pub fn set_api_rate_limit_status(node: &Node, rate_limit_status: &RateLimitStatus) {
+  API_RATE_LIMIT_REMAINING_15MIN
+    .with_label_values(&[&node.veid])
     .set(rate_limit_status.remaining_points_15min);
 
-  RATE_LIMIT_REMAINING_24H
-    .with_label_values(&[
-      &server.veid, &server.api_key
-    ])
+  API_RATE_LIMIT_REMAINING_24H
+    .with_label_values(&[&node.veid])
     .set(rate_limit_status.remaining_points_24h);
+}
+
+#[allow(dead_code)]
+pub fn inc_api_request_total(node: &Node) {
+  API_REQUEST_TOTAL
+    .with_label_values(&[&node.veid])
+    .inc();
 }
 
 /// label:

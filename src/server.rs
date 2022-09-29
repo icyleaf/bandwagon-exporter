@@ -1,6 +1,6 @@
 use crate::bandwagon::Kiwivm;
 use crate::command::Command;
-use crate::configuration::Configuration;
+use crate::configuration::{Configuration, Node};
 use crate::metrics;
 
 use std::net::SocketAddr;
@@ -10,29 +10,34 @@ use hyper::{
   Body, Request, Response, StatusCode
 };
 
+async fn request_server_info(client: Kiwivm, node: Node) {
+  let server_info = client.get_service_info(&node.veid, &node.api_key)
+    .await
+    .expect("Failes to fetch node info.");
+
+  metrics::inc_api_request_total(&node);
+  metrics::set_node_info(&server_info);
+  metrics::set_data_counter(&server_info);
+  metrics::set_data_next_reset(&server_info);
+  metrics::set_plan_monthly_data(&server_info);
+}
+
+async fn request_api_rate_limit(client: Kiwivm, node: Node) {
+  let rate_limit_status = client.get_rate_limit_status(&node.veid, &node.api_key)
+  .await
+  .expect("Failes to fetch api rate limit status.");
+
+  metrics::inc_api_request_total(&node);
+  metrics::set_api_rate_limit_status(&node, &rate_limit_status);
+}
+
 async fn reqest_metrics(command: &Command) -> String {
   let config = Configuration::from(&command).unwrap();
   let client = Kiwivm::new(config.endpoint);
 
-  for node in &config.nodes {
-    println!("{:?}", node);
-
-    let server_info = client.get_service_info(&node.veid, &node.api_key)
-      .await
-      .expect("Failes to fetch node info.");
-
-    println!("{:?}", server_info);
-
-    metrics::set_node_info(&server_info);
-    metrics::set_data_counter(&server_info);
-    metrics::set_data_next_reset(&server_info);
-    metrics::set_plan_monthly_data(&server_info);
-
-    let rate_limit_status = client.get_rate_limit_status(&node.veid, &node.api_key)
-        .await
-    .expect("Failes to fetch api rate limit status.");
-
-    metrics::set_api_rate_limit_status(&node, &rate_limit_status);
+  for node in config.nodes {
+    tokio::spawn(request_server_info(client.clone(), node.clone()));
+    tokio::spawn(request_api_rate_limit(client.clone(), node.clone()));
   }
 
   String::from(metrics::render_prometheus_text_data())

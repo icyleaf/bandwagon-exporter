@@ -4,6 +4,7 @@ use hyper::client::connect::HttpConnector;
 use hyper::{body::Buf};
 use serde::Deserialize;
 
+#[derive(Clone)]
 pub struct Kiwivm {
   pub endpoint: String,
   client: Client<HttpConnector, Body>,
