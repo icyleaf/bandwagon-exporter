@@ -1,0 +1,12 @@
+# Rust
+target
+
+# Docker
+Dockerfile
+Dockerfile.new
+.dockerignore
+
+# Git
+.git
+.github
+.gitignore

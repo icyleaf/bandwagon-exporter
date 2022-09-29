@@ -8,8 +8,8 @@ Start the binary with `-h` to get the complete syntax. The parameters are:
 
 | Parameter | Required | Valid values | Default | Description |
 | -- | -- | -- | -- | -- |
-| `CONFIG_PATH` | yes | *.json/yaml/toml | | Config path, see [examples](config/).
-| `-m` | no | HOST:PORT | 0.0.0.0:9103 | Specify the serivce with port. This is the target your Prometheus instance should point to.
+| `-c`<br />`--config-path` | yes | *.json/yaml/toml | | Config path, see [examples](config/).
+| `-m`<br />`--metrics-server` | no | HOST:PORT | 0.0.0.0:9103 | Specify the serivce with port. This is the target your Prometheus instance should point to.
 | `--metrics-path` | no | URI Path | /metrics | This is the path of URI, must starts with `/` char.
 
 Once started, the tool will listen on the specified port (or the default one, 9103, if not specified) and return a Prometheus valid response at the url `/metrics`. So to check if the tool is working properly simply browse the `http://0.0.0.0:9103` (or whichever address with port you choose).
