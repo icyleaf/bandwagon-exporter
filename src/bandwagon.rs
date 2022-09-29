@@ -64,7 +64,7 @@ impl ServiceInfo {
 impl Kiwivm {
   pub fn new(endpoint: String) -> Kiwivm {
     Kiwivm {
-      endpoint: endpoint,
+      endpoint,
       client: Client::new()
     }
   }

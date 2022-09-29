@@ -43,7 +43,6 @@ lazy_static! {
   ).expect("Can't create a metric");
 }
 
-#[allow(dead_code)]
 pub fn set_data_counter(server_info: &ServiceInfo) {
   DATA_COUNTER
     .with_label_values(&[
@@ -52,7 +51,6 @@ pub fn set_data_counter(server_info: &ServiceInfo) {
     .set(server_info.data_counter);
 }
 
-#[allow(dead_code)]
 pub fn set_plan_monthly_data(server_info: &ServiceInfo) {
   PLAN_MONTHLY_DATA
     .with_label_values(&[
@@ -61,7 +59,6 @@ pub fn set_plan_monthly_data(server_info: &ServiceInfo) {
     .set(server_info.plan_monthly_data);
 }
 
-#[allow(dead_code)]
 pub fn set_data_next_reset(server_info: &ServiceInfo) {
   DATA_NEXT_RESET
     .with_label_values(&[
@@ -70,7 +67,6 @@ pub fn set_data_next_reset(server_info: &ServiceInfo) {
     .set(server_info.data_next_reset);
 }
 
-#[allow(dead_code)]
 pub fn set_api_rate_limit_status(node: &Node, rate_limit_status: &RateLimitStatus) {
   API_RATE_LIMIT_REMAINING_15MIN
     .with_label_values(&[&node.veid])
@@ -81,25 +77,12 @@ pub fn set_api_rate_limit_status(node: &Node, rate_limit_status: &RateLimitStatu
     .set(rate_limit_status.remaining_points_24h);
 }
 
-#[allow(dead_code)]
 pub fn inc_api_request_total(node: &Node) {
   API_REQUEST_TOTAL
     .with_label_values(&[&node.veid])
     .inc();
 }
 
-/// label:
-/// - hostname
-/// - ip_address
-/// - os
-/// - suspended
-/// - location
-/// - vm_type
-/// - plan
-/// - disk
-/// - ram
-/// - swap
-#[allow(dead_code)]
 pub fn set_node_info(server_info: &ServiceInfo) {
   let suspended = if server_info.suspended { "1" } else { "0" };
   NODE_INFO

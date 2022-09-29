@@ -32,7 +32,7 @@ async fn request_api_rate_limit(client: Kiwivm, node: Node) {
 }
 
 async fn reqest_metrics(command: &Command) -> String {
-  let config = Configuration::from(&command).unwrap();
+  let config = Configuration::from(command).unwrap();
   let client = Kiwivm::new(config.endpoint);
 
   for node in config.nodes {
@@ -40,13 +40,12 @@ async fn reqest_metrics(command: &Command) -> String {
     tokio::spawn(request_api_rate_limit(client.clone(), node.clone()));
   }
 
-  String::from(metrics::render_prometheus_text_data())
+  metrics::render_prometheus_text_data()
 }
 
 async fn serve_path(
   req: Request<Body>,
   command: Command) -> Response<Body> {
-    // Response::new("Hello, World".into())
 
   let is_get_method = req.method() == "GET";
   let status = if is_get_method {
@@ -88,15 +87,6 @@ pub async fn run_web_server(addr: SocketAddr, command: Command) {
       Ok::<_, hyper::Error>(service_fn(func))
     }
 });
-
-  // let make_service = make_service_fn(|_| async {
-  //   async move {
-  //     let command = command.clone();
-  //     Ok::<_, hyper::Error>(service_fn(|req| async {
-  //       serve_path(req, command.clone()).await
-  //     }))
-  //   }
-  // });
 
   let server = hyper::Server::bind(&addr)
     .serve(make_service);

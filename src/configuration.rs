@@ -9,7 +9,6 @@ pub struct Node {
 }
 
 #[derive(Debug, Deserialize)]
-#[allow(unused)]
 pub struct Configuration {
   pub endpoint: String,
   pub metrics_path: String,
