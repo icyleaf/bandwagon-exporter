@@ -9,10 +9,10 @@ keywords = ["prometheus", "exporter", "bandwagon"]
 categories = ["database"]
 
 [dependencies]
-clap = { version = "4.0.24", features = ["derive", "env"] }
+clap = { version = "4.0.27", features = ["derive", "env"] }
 
 config = "0.13.1"
-serde = "1.0.147"
+serde = "1.0.148"
 serde_json = "1.0.89"
 
 hyper = { version = "0.14", features = ["full"] }
