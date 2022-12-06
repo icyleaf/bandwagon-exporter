@@ -11,7 +11,7 @@ categories = ["database"]
 [dependencies]
 clap = { version = "4.0.27", features = ["derive", "env"] }
 
-config = "0.13.1"
+config = "0.13.3"
 serde = "1.0.148"
 serde_json = "1.0.89"
 
