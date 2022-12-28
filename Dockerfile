@@ -1,24 +1,24 @@
 FROM --platform=$BUILDPLATFORM rust:1.64.0-alpine AS builder
 
-ARG TARGETARCH
+ARG TARGETPLATFORM
 RUN set -x \
     && apk add --no-cache build-base
 
-RUN echo "Setting variables for ${TARGETPLATFORM:=amd64}" && \
+RUN echo "Setting variables for ${TARGETPLATFORM}" && \
     case "$TARGETPLATFORM" in \
-    "amd64") \
+    "linux/amd64") \
         RUST_TARGET="x86_64-unknown-linux-musl" \
         MUSL="x86_64-linux-musl" \
     ;; \
-    "arm64") \
+    "linux/arm64") \
         RUST_TARGET="aarch64-unknown-linux-musl" \
         MUSL="aarch64-linux-musl" \
     ;; \
-    linux/arm/v7) \
+    "linux/arm/v7") \
         RUST_TARGET="armv7-unknown-linux-musleabi" \
         MUSL="armv7m-linux-musleabi" \
     ;; \
-    "riscv64") \
+    "linux/riscv64") \
         RUST_TARGET="riscv64gc-unknown-linux-musl" \
         MUSL="riscv64-linux-musl" \
     ;; \
