@@ -38,5 +38,3 @@ jobs:
           tags: ghcr.io/${{ github.repository }}:snapshot
           labels: ${{ steps.metadata.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-          cache-from: type=gha,scope=docker-build-release
-          cache-to: type=gha,mode=max,scope=docker-build-release
