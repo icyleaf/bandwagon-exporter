@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.64.0-alpine AS builder
+FROM --platform=$BUILDPLATFORM rust:1.66.0-alpine AS builder
 
 ARG TARGETPLATFORM
 RUN set -x \
@@ -37,15 +37,6 @@ WORKDIR /workspace
 COPY Cargo.lock ./Cargo.lock
 COPY Cargo.toml ./Cargo.toml
 
-# Install dependencies
-RUN mkdir src && \
-    echo 'fn main() {}' > src/main.rs && \
-    PATH="/opt/$(cat /tmp/musl)-cross/bin:$PATH" \
-    CC="$(cat /tmp/musl)-gcc" \
-    RUSTFLAGS="-C linker=$CC" \
-    cargo build --target "$(cat /tmp/rusttarget)" --release && \
-    rm -rf src/
-
 COPY . .
 
 RUN RUST_TARGET="$(cat /tmp/rusttarget)" && \
@@ -55,12 +46,12 @@ RUN RUST_TARGET="$(cat /tmp/rusttarget)" && \
     cargo build --target "$RUST_TARGET" --release && \
     mv target/$RUST_TARGET/release/bandwagon-exporter target/release/
 
-FROM alpine:3.16
+FROM alpine:3.17
 RUN apk add --no-cache --update tini
 
-COPY --from=builder /workspace/target/release/bandwagon-exporter /usr/local/bin/bandwagon-exporter
+COPY --from=builder /workspace/target/release/bandwagon-exporter /usr/bin/bandwagon-exporter
 
 EXPOSE 9103/tcp
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/bandwagon-exporter"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/bandwagon-exporter"]
 CMD [ "--help" ]
