@@ -13,7 +13,7 @@ clap = { version = "4.0.32", features = ["derive", "env"] }
 
 config = "0.13.3"
 serde = "1.0.152"
-serde_json = "1.0.91"
+serde_json = "1.0.92"
 
 hyper = { version = "0.14", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
