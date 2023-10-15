@@ -10,6 +10,9 @@ use hyper::{
   Body, Request, Response, StatusCode
 };
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
+
 async fn request_server_info(client: Kiwivm, node: Node) {
   let server_info = client.get_service_info(&node.veid, &node.api_key)
     .await
@@ -55,9 +58,12 @@ async fn serve_path(
   };
 
   if !is_get_method || req.uri().path() != command.metrics_path {
+    let body = format!("<h3>Prometheus Bandwagon Exporter version {} by {}.</h3><p>Path: <a href='/metrics'>/metrics</a></p>", VERSION, AUTHOR);
+
     Response::builder()
       .status(status)
-      .body(hyper::Body::from(status.canonical_reason().unwrap()))
+      .header(CONTENT_TYPE, "text/html")
+      .body(Body::from(body))
       .unwrap()
   } else {
     let body = reqest_metrics(&command).await;

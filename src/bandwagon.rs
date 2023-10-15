@@ -1,13 +1,13 @@
-use hyper::{Request, Method, Body};
-use hyper::client::{Client};
+use hyper::Body;
+use hyper::client::Client;
 use hyper::client::connect::HttpConnector;
-use hyper::{body::Buf};
+use hyper_rustls::HttpsConnector;
 use serde::Deserialize;
 
 #[derive(Clone)]
 pub struct Kiwivm {
   pub endpoint: String,
-  client: Client<HttpConnector, Body>,
+  client: Client<HttpsConnector<HttpConnector>, Body>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -63,9 +63,15 @@ impl ServiceInfo {
 
 impl Kiwivm {
   pub fn new(endpoint: String) -> Kiwivm {
+    let https = hyper_rustls::HttpsConnectorBuilder::new()
+      .with_native_roots()
+      .https_only()
+      .enable_http1()
+      .build();
+
     Kiwivm {
       endpoint,
-      client: Client::new()
+      client: Client::builder().build(https)
     }
   }
 
@@ -76,19 +82,11 @@ impl Kiwivm {
   pub async fn get_service_info(&self,
     veid: &String, api_key: &String
   ) -> Result<ServiceInfo, hyper::Error> {
-    let url = format!("{}/getServiceInfo?veid={}&api_key={}", self.endpoint, *veid, *api_key);
-    let request = Request::builder()
-        .method(Method::GET)
-        .uri(url)
-        .body(Body::from(""))
-        .unwrap();
-
-    let res = self.client
-      .request(request)
-      .await?;
-
-    let body = hyper::body::aggregate(res).await?;
-    let service_info = serde_json::from_reader(body.reader()).unwrap();
+    let url = format!("{}/getServiceInfo?veid={}&api_key={}", self.endpoint, *veid, *api_key).parse().unwrap();
+    let res = self.client.get(url).await?;
+    let body_bytes = hyper::body::to_bytes(res.into_body()).await?;
+    let body = String::from_utf8(body_bytes.to_vec()).unwrap();
+    let service_info = serde_json::from_slice(body.as_bytes()).unwrap();
 
     Ok(service_info)
   }
@@ -100,19 +98,11 @@ impl Kiwivm {
   pub async fn get_rate_limit_status(&self,
     veid: &String, api_key: &String
   ) -> Result<RateLimitStatus, hyper::Error> {
-    let url = format!("{}/getRateLimitStatus?veid={}&api_key={}", self.endpoint, veid, api_key);
-    let request = Request::builder()
-        .method(Method::GET)
-        .uri(url)
-        .body(Body::from(""))
-        .unwrap();
-
-    let res = self.client
-      .request(request)
-      .await?;
-
-    let body = hyper::body::aggregate(res).await?;
-    let rate_limit_status = serde_json::from_reader(body.reader()).unwrap();
+    let url = format!("{}/getRateLimitStatus?veid={}&api_key={}", self.endpoint, veid, api_key).parse().unwrap();
+    let res = self.client.get(url).await?;
+    let body_bytes = hyper::body::to_bytes(res.into_body()).await?;
+    let body = String::from_utf8(body_bytes.to_vec()).unwrap();
+    let rate_limit_status = serde_json::from_reader(body.as_bytes()).unwrap();
 
     Ok(rate_limit_status)
   }
