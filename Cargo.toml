@@ -12,7 +12,7 @@ categories = ["database"]
 clap = { version = "4.5.7", features = ["derive", "env"] }
 
 config = "0.14.0"
-serde = "1.0.197"
+serde = "1.0.208"
 serde_json = "1.0.117"
 
 hyper = { version = "0.14.20", features = ["full"] }
