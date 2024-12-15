@@ -1,6 +1,6 @@
 [package]
 name = "bandwagon-exporter"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["icyleaf <icyleaf.cn@gmail.com>"]
 description = "A Prometheus Exporter for BandwagonHost KiwiVM."
 edition = "2021"
