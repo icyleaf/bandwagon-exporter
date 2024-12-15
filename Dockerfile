@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.76.0-alpine AS builder
+FROM --platform=$BUILDPLATFORM rust:1.83.0-alpine AS builder
 
 ARG TARGETPLATFORM
 RUN set -x \
@@ -46,7 +46,7 @@ RUN RUST_TARGET="$(cat /tmp/rusttarget)" && \
     cargo build --target "$RUST_TARGET" --release && \
     mv target/$RUST_TARGET/release/bandwagon-exporter target/release/
 
-FROM alpine:3.19
+FROM alpine:3.21
 RUN apk add --no-cache --update tini
 
 COPY --from=builder /workspace/target/release/bandwagon-exporter /usr/bin/bandwagon-exporter

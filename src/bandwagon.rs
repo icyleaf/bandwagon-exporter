@@ -14,7 +14,6 @@ pub struct Kiwivm {
 pub struct ServiceInfo {
   pub vm_type: String,                                // Hypervizor type (ovz or kvm)
   pub hostname: String,                               // Hostname of the VPS
-  pub node_ip: String,                                // IP address of the physical node
   pub node_alias: String,                             // Internal nickname of the physical node
   pub node_location: String,                          // Physical location (country, state)
   pub node_location_id: String,                       // Id value of Physical location
