@@ -8,33 +8,70 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-snapshot:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    strategy:
+      matrix:
+        target: [x86_64-unknown-linux-musl, aarch64-unknown-linux-musl]
+        include:
+          - target: x86_64-unknown-linux-musl
+            arch: amd64
+          - target: aarch64-unknown-linux-musl
+            arch: arm64
 
-      - name: Setup Docker Buildx
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build with cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Prepare binary for Docker image
+        run: cp target/${{ matrix.target }}/release/bandwagon-exporter bandwagon-exporter-${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bandwagon-exporter-${{ matrix.arch }}
+          path: bandwagon-exporter-${{ matrix.arch }}
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bandwagon-exporter-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.CR_PAT }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Docker metadata
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-
-      - name: Build and push snapshot image
-        uses: docker/build-push-action@v6
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:snapshot
-          labels: ${{ steps.metadata.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+          tags: |
+            icyleaf/bandwagon-exporter:latest
+            icyleaf/bandwagon-exporter:${{ github.ref_name }}
+          build-args: |
+            BINARY_AMD64=bandwagon-exporter-amd64
+            BINARY_ARM64=bandwagon-exporter-arm64
