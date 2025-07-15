@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.83.0-alpine AS builder
+FROM --platform=$BUILDPLATFORM rust:1.88.0-alpine AS builder
 
 ARG TARGETPLATFORM
 RUN set -x \
