@@ -53,7 +53,7 @@ jobs:
           cp bandwagon-exporter-arm64 docker-context/bandwagon-exporter-arm64
 
       - name: Build and push multi-arch image to GHCR
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./docker-context
           push: true
