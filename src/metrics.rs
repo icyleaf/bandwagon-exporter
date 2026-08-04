@@ -85,18 +85,21 @@ pub fn inc_api_request_total(node: &Node) {
 
 pub fn set_node_info(server_info: &ServiceInfo) {
   let suspended = if server_info.suspended { "1" } else { "0" };
+  let disk = server_info.plan_disk.to_string();
+  let ram = server_info.plan_ram.to_string();
+  let swap = server_info.plan_swap.to_string();
   NODE_INFO
     .with_label_values(&[
-      &server_info.hostname,
-      &server_info.ip_address(),
-      &server_info.os,
+      server_info.hostname.as_str(),
+      server_info.ip_address().as_str(),
+      server_info.os.as_str(),
       suspended,
-      &server_info.node_location,
-      &server_info.vm_type,
-      &server_info.plan,
-      &server_info.plan_disk.to_string(),
-      &server_info.plan_ram.to_string(),
-      &server_info.plan_swap.to_string()
+      server_info.node_location.as_str(),
+      server_info.vm_type.as_str(),
+      server_info.plan.as_str(),
+      disk.as_str(),
+      ram.as_str(),
+      swap.as_str()
     ])
     .set(1);
 }
