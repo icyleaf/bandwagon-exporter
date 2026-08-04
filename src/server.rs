@@ -4,11 +4,17 @@ use crate::configuration::{Configuration, Node};
 use crate::metrics;
 
 use std::net::SocketAddr;
+use bytes::Bytes;
+use http_body_util::Full;
 use hyper::{
-  service::{make_service_fn, service_fn},
+  body::Incoming,
   http::header::CONTENT_TYPE,
-  Body, Request, Response, StatusCode
+  server::conn::http1,
+  service::service_fn,
+  Request, Response, StatusCode
 };
+use hyper_util::rt::TokioIo;
+use tokio::net::TcpListener;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const AUTHOR: &str = env!("CARGO_PKG_AUTHORS");
@@ -47,8 +53,8 @@ async fn reqest_metrics(command: &Command) -> String {
 }
 
 async fn serve_path(
-  req: Request<Body>,
-  command: Command) -> Response<Body> {
+  req: Request<Incoming>,
+  command: Command) -> Response<Full<Bytes>> {
 
   let is_get_method = req.method() == "GET";
   let status = if is_get_method {
@@ -63,7 +69,7 @@ async fn serve_path(
     Response::builder()
       .status(status)
       .header(CONTENT_TYPE, "text/html")
-      .body(Body::from(body))
+      .body(Full::new(Bytes::from(body)))
       .unwrap()
   } else {
     let body = reqest_metrics(&command).await;
@@ -71,34 +77,38 @@ async fn serve_path(
     Response::builder()
       .status(StatusCode::OK)
       .header(CONTENT_TYPE, "text/plain")
-      .body(Body::from(body))
+      .body(Full::new(Bytes::from(body)))
       .unwrap()
   }
 }
 
 pub async fn run_web_server(addr: SocketAddr, command: Command) {
-  let metrics_path = command.metrics_path.clone();
-  println!("Starting exporter on http://{}{}", addr, metrics_path);
   let command = command.clone();
+  println!("Starting exporter on http://{}{}", addr, command.metrics_path);
 
-  let make_service = make_service_fn(move |_| {
+  let listener = TcpListener::bind(addr)
+    .await
+    .expect("Failed to bind metrics server address");
+
+  loop {
+    let (stream, _) = listener.accept()
+      .await
+      .expect("Failed to accept connection");
+    let io = TokioIo::new(stream);
     let command = command.clone();
 
-    async move {
+    tokio::spawn(async move {
       let func = move |req| {
         let command = command.clone();
         async move { Ok::<_, hyper::Error>(serve_path(req, command).await) }
       };
 
-      Ok::<_, hyper::Error>(service_fn(func))
-    }
-});
-
-  let server = hyper::Server::bind(&addr)
-    .serve(make_service);
-
-  // Run this server for... forever!
-  if let Err(e) = server.await {
-      eprintln!("server error: {}", e);
+      if let Err(e) = http1::Builder::new()
+        .serve_connection(io, service_fn(func))
+        .await
+      {
+        eprintln!("Failed to serve connection: {}", e);
+      }
+    });
   }
 }
